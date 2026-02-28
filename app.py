@@ -14,11 +14,10 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")  # Optional for Places API
 
 client = InferenceClient(
-    model="mistralai/Mistral-7B-Instruct-v0.2",
-    token=HF_TOKEN
+    api_key=HF_TOKEN
 )
 
-MODEL_PATH = "C://Users//aakan//OneDrive//Desktop//EyeDiseaseDtection//best_model_val_acc.h5"   
+MODEL_PATH = "best_model_val_acc.h5"   
 CLASS_NAMES = ['cataract', 'diabetic_retinopathy', 'glaucoma', 'normal']
 
 # ─── PAGE CONFIG ───────────────────────────────────────────────────────────────
@@ -376,11 +375,29 @@ def get_hospitals_nominatim(location: str, condition: str):
         return None, str(e)
 
 def ask_llm(predicted_label: str, question: str, chat_history: list) -> str:
-    # Build conversation context
-    history_text = ""
-    for role, msg in chat_history[-6:]:  # Last 3 exchanges
-        prefix = "User" if role == "User" else "Assistant"
-        history_text += f"{prefix}: {msg}\n"
+    messages = [
+        {
+            "role": "system",
+            "content": f"""You are RetinaScan AI, a knowledgeable medical assistant specializing in ophthalmology.
+The patient's fundus image has been analyzed and the predicted condition is: {predicted_label}.
+Give clear, accurate, compassionate guidance. Use simple language. Structure answer with brief points when helpful.
+ALWAYS end with: "⚠️ Disclaimer: This is AI-generated information, not a medical diagnosis. Please consult a qualified ophthalmologist." """
+        }
+    ]
+    for role, msg in chat_history[-6:]:
+        messages.append({"role": "user" if role == "User" else "assistant", "content": msg})
+    messages.append({"role": "user", "content": question})
+
+    try:
+        response = client.chat.completions.create(
+            model="meta-llama/Llama-3.2-3B-Instruct:fastest",
+            messages=messages,
+            max_tokens=400,
+            temperature=0.6,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"❌ Could not get response from AI: {str(e)}"
 
     prompt = f"""<s>[INST] You are RetinaScan AI, a knowledgeable medical assistant specializing in ophthalmology.
 The patient's fundus image has been analyzed and the predicted condition is: **{predicted_label}**.
