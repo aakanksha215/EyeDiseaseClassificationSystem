@@ -328,9 +328,16 @@ def classify_image(model, image: Image.Image):
 def get_hospitals_nominatim(location: str, condition: str):
     """Use OpenStreetMap Nominatim + Overpass API — free, no API key needed."""
     try:
+        encoded_location = requests.utils.quote(location)
+        headers = {
+            "User-Agent": "RetinaScan-AI/1.0 (aakanksha21c@email.com)",  # Must be unique & real
+            "Accept-Language": "en"
+        }
+
         # Geocode location
         geo_url = f"https://nominatim.openstreetmap.org/search?q={requests.utils.quote(location)}&format=json&limit=1"
-        geo_resp = requests.get(geo_url, headers={"User-Agent": "RetinaScan-App/1.0"}, timeout=5)
+        geo_resp = requests.get(geo_url, headers=headers, timeout=25)
+        geo_resp.raise_for_status()
         geo_data = geo_resp.json()
         if not geo_data:
             return None, None
@@ -351,8 +358,11 @@ def get_hospitals_nominatim(location: str, condition: str):
         ov_resp = requests.post(
             "https://overpass-api.de/api/interpreter",
             data={"data": overpass_query},
-            timeout=10
+            headers={"User-Agent": "RetinaScan-AI/1.0 (aakanksha21c@email.com)"},
+            timeout=25  
         )
+        ov_resp.raise_for_status()
+        
         results = ov_resp.json().get("elements", [])
         hospitals = []
         for el in results:
