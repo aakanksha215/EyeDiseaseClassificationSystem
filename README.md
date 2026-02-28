@@ -99,3 +99,6 @@ The frontend of the Eye Disease Classification System is developed using Streaml
 ![Image](Screenshots/Screenshot5.png)
 
 ![Image](Screenshots/Screenshot4.png)
+
+Below is the link to the deployed model:
+https://eyediseaseclassificationsystem-9ckkkca9jjxozjfknkqwc7.streamlit.app/
