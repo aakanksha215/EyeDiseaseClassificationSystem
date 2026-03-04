@@ -466,7 +466,7 @@ with st.sidebar:
     <b>Architecture:</b> DenseNet121 <br>
     <b>Input:</b> 224×224 RGB fundus images<br>
     <b>Classes:</b> 4 (binary per class)<br>
-    <b>LLM:</b> Mistral-7B-Instruct
+    <b>LLM:</b> Llama-3.2-3B-Instruct
     </div>
     """, unsafe_allow_html=True)
 
